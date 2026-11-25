@@ -1,0 +1,32 @@
+# ravivaghela.in — Hostinger (Apache) rules
+
+# Keep repo and helper files private on the live server
+<FilesMatch "\.(md|sh|gitignore)$">
+  Require all denied
+</FilesMatch>
+RedirectMatch 404 ^/\.git(/|$)
+ErrorDocument 404 /404.html
+Options -Indexes
+
+RewriteEngine On
+
+# Always https://ravivaghela.in (no www)
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteRule ^ https://ravivaghela.in%{REQUEST_URI} [L,R=301]
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://ravivaghela.in%{REQUEST_URI} [L,R=301]
+
+# /index.html -> / (one clean address for Google)
+RewriteCond %{THE_REQUEST} \s/index\.html[\s?] [NC]
+RewriteRule ^index\.html$ / [L,R=301]
+
+# Cache images for a week; always re-check HTML so updates show immediately
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(webp|jpg|jpeg|png|svg)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+</IfModule>
